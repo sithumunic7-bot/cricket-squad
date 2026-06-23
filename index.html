@@ -18,119 +18,43 @@
             --text: #f8fafc;
             --input-bg: #334155;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--background); color: var(--text); margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; }
         .hidden { display: none !important; }
-        
-        .auth-box {
-            max-width: 450px;
-            margin: 60px auto;
-            background: var(--card);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
-            border: 1px solid #334155;
-        }
+        .auth-box { max-width: 450px; margin: 60px auto; background: var(--card); padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); border: 1px solid #334155; }
         .auth-box h2 { text-align: center; margin-top: 0; color: var(--accent); }
         .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #334155; }
-        .tab-btn {
-            flex: 1; padding: 10px; background: none; border: none; color: #94a3b8;
-            font-weight: bold; cursor: pointer; text-align: center; font-size: 16px;
-        }
+        .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: #94a3b8; font-weight: bold; cursor: pointer; text-align: center; font-size: 16px; }
         .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
-        
-        .profile-card {
-            background: linear-gradient(135deg, #1e3a8a, #0f172a);
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border: 1px solid #334155;
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            flex-wrap: wrap;
-        }
-        .avatar-container {
-            width: 110px; height: 110px; border-radius: 50%; 
-            border: 4px solid var(--accent); overflow: hidden; background: #334155;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .profile-card { background: linear-gradient(135deg, #1e3a8a, #0f172a); padding: 25px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid #334155; display: flex; align-items: center; gap: 25px; flex-wrap: wrap; }
+        .avatar-container { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--accent); overflow: hidden; background: #334155; display: flex; align-items: center; justify-content: center; }
         .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
         .profile-details { flex: 1; min-width: 250px; }
-        .profile-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
-            margin-top: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px;
-            border-radius: 8px;
-        }
+        .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; }
         .profile-item span { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
         .profile-item strong { font-size: 15px; color: #f1f5f9; }
-        
         .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logout-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .logout-btn:hover { background: #dc2626; }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .stat-card {
-            background: var(--card); padding: 15px; border-radius: 8px;
-            text-align: center; border: 1px solid #334155;
-        }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #334155; }
         .batting-stat { border-top: 4px solid var(--batting-color); }
         .bowling-stat { border-top: 4px solid var(--bowling-color); }
         .stat-card h3 { margin: 0; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
         .stat-card p { margin: 8px 0 0 0; font-size: 22px; font-weight: bold; }
-        
-        .form-container {
-            background: var(--card); padding: 20px; border-radius: 8px;
-            margin-bottom: 25px; border: 1px solid #334155;
-        }
+        .form-container { background: var(--card); padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #334155; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #cbd5e1; }
-        .form-group input, .form-group select {
-            padding: 8px; border: 1px solid #475569; border-radius: 4px;
-            background-color: var(--input-bg); color: white; font-size: 14px;
-        }
-        
-        button.action-btn {
-            grid-column: 1 / -1; color: white; border: none; padding: 10px;
-            font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px;
-        }
+        .form-group input, .form-group select { padding: 8px; border: 1px solid #475569; border-radius: 4px; background-color: var(--input-bg); color: white; font-size: 14px; }
+        button.action-btn { grid-column: 1 / -1; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; }
         .batting-btn { background: var(--batting-color); }
         .bowling-btn { background: var(--bowling-color); }
         .submit-btn { background: #0284c7; width: 100%; margin-top: 15px; font-size: 16px; }
-        
-        h2 { margin-top: 40px; padding-bottom: 5px; border-bottom: 2px solid #334155; }
-        .batting-title { color: #60a5fa; }
-        .bowling-title { color: #4ade80; }
-        table {
-            width: 100%; border-collapse: collapse; background: var(--card);
-            border-radius: 8px; overflow: hidden; margin-bottom: 25px; border: 1px solid #334155;
-        }
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; margin-bottom: 25px; border: 1px solid #334155; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
         .batting-table th { background-color: var(--batting-color); color: white; }
         .bowling-table th { background-color: var(--bowling-color); color: white; }
-        
-        #loadingOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.85); display: flex; align-items: center;
-            justify-content: center; z-index: 1000; font-size: 20px; font-weight: bold; color: var(--accent);
-        }
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; font-size: 20px; font-weight: bold; color: var(--accent); }
     </style>
 </head>
 <body>
@@ -143,7 +67,6 @@
             <button id="loginTab" class="tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
             <button id="registerTab" class="tab-btn" onclick="switchAuthTab('register')">Create Account</button>
         </div>
-        
         <div id="loginForm">
             <div class="form-group" style="margin-bottom: 15px;">
                 <label>Enter Name to Sign In</label>
@@ -151,7 +74,6 @@
             </div>
             <button class="action-btn submit-btn" onclick="handleLogin()">Access Dashboard</button>
         </div>
-
         <div id="registerForm" class="hidden">
             <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
                 <div class="form-group" style="grid-column: 1/-1;">
@@ -178,7 +100,6 @@
             <span style="font-weight: bold; color: var(--accent);">Status: Live Cloud Linked</span>
             <button class="logout-btn" onclick="handleLogout()">Log Out</button>
         </div>
-
         <div class="profile-card">
             <div class="avatar-container" id="playerAvatar"></div>
             <div class="profile-details">
@@ -379,10 +300,9 @@
     }
 
     function calculateStats() {
-        let myBatting = masterDatabase.batting.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
-        let myBowling = masterDatabase.bowling.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
+        let myBatting = masterDatabase.batting.filter(b => b.player && b.player.toLowerCase() === currentUsername.toLowerCase());
+        let myBowling = masterDatabase.bowling.filter(b => b.player && b.player.toLowerCase() === currentUsername.toLowerCase());
 
-        // Batting
         let runs = 0, balls = 0, outs = 0, hs = 0, fifty = 0, hundred = 0;
         let batTbody = document.querySelector('#battingTable tbody'); batTbody.innerHTML = '';
         myBatting.forEach(b => {
@@ -401,7 +321,6 @@
         document.getElementById('batHS').innerText = hs;
         document.getElementById('bat50100').innerText = `${fifty} / ${hundred}`;
 
-        // Bowling
         let wickets = 0, runsConceded = 0, bestW = 0, bestR = 0, haul3 = 0, haul5 = 0;
         let bowlTbody = document.querySelector('#bowlingTable tbody'); bowlTbody.innerHTML = '';
         myBowling.forEach(w => {
@@ -418,11 +337,10 @@
         document.getElementById('bowlBest').innerText = `${bestW}/${bestR}`;
         document.getElementById('bowlHauls').innerText = `${haul3} / ${haul5}`;
 
-        // Leaderboards
         let runsMap = {}, wicketsMap = {};
         masterDatabase.profiles.forEach(p => { runsMap[p.name] = 0; wicketsMap[p.name] = 0; });
-        masterDatabase.batting.forEach(b => { if(runsMap[b.player] !== undefined) runsMap[b.player] += parseInt(b.runs); });
-        masterDatabase.bowling.forEach(w => { if(wicketsMap[w.player] !== undefined) wicketsMap[w.player] += parseInt(w.wickets); });
+        masterDatabase.batting.forEach(b => { if(b.player && runsMap[b.player] !== undefined) runsMap[b.player] += parseInt(b.runs); });
+        masterDatabase.bowling.forEach(w => { if(w.player && wicketsMap[w.player] !== undefined) wicketsMap[w.player] += parseInt(w.wickets); });
         let topBat = Object.keys(runsMap).map(k => ({name: k, runs: runsMap[k]})).sort((a,b)=>b.runs-a.runs);
         let topBowl = Object.keys(wicketsMap).map(k => ({name: k, wickets: wicketsMap[k]})).sort((a,b)=>b.wickets-a.wickets);
         document.querySelector('#orangeCapTable tbody').innerHTML = topBat.slice(0,5).map((p,i)=>`<tr><td>${i+1}</td><td>${p.name}</td><td><strong>${p.runs}</strong></td></tr>`).join('');
