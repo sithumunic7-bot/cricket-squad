@@ -5,115 +5,526 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clubhouse Cricket Analytics Terminal</title>
     <script>
+        // =========================================================================
+        // LIVE GOOGLE SHEET CLOUD SERVER CONNECTION (HARDCODED)
+        // =========================================================================
         const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxWMhU90gKUFzSBMTItFuOlT2dfkA1KnLboKwpbkq_kSFJCaVh-QfF1gO-tStuGXtyuHw/exec";
+        // =========================================================================
     </script>
     <style>
         :root {
-            --primary: #0f172a; --batting-color: #1e3a8a; --bowling-color: #15803d;
-            --accent: #38bdf8; --background: #0f172a; --card: #1e293b;
-            --text: #f8fafc; --input-bg: #334155;
+            --primary: #0f172a;
+            --batting-color: #1e3a8a;
+            --bowling-color: #15803d;
+            --accent: #38bdf8;
+            --background: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --input-bg: #334155;
         }
-        
-        /* === ANIMATION ENGINE === */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-card { animation: fadeIn 0.6s ease-out forwards; opacity: 0; }
-        .dashboard, .form-container, .profile-card { animation: fadeIn 0.8s ease-out; }
-        
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--background); color: var(--text); margin: 0; padding: 20px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
         .container { max-width: 1100px; margin: 0 auto; }
         .hidden { display: none !important; }
         
-        .auth-box { max-width: 450px; margin: 60px auto; background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid #334155; }
+        .auth-box {
+            max-width: 450px;
+            margin: 60px auto;
+            background: var(--card);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+        }
         .auth-box h2 { text-align: center; margin-top: 0; color: var(--accent); }
         .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #334155; }
-        .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: #94a3b8; font-weight: bold; cursor: pointer; text-align: center; font-size: 16px; }
+        .tab-btn {
+            flex: 1; padding: 10px; background: none; border: none; color: #94a3b8;
+            font-weight: bold; cursor: pointer; text-align: center; font-size: 16px;
+        }
         .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
         
-        .profile-card { background: linear-gradient(135deg, #1e3a8a, #0f172a); padding: 25px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #334155; display: flex; align-items: center; gap: 25px; flex-wrap: wrap; }
-        .avatar-container { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--accent); overflow: hidden; background: #334155; display: flex; align-items: center; justify-content: center; }
+        .profile-card {
+            background: linear-gradient(135deg, #1e3a8a, #0f172a);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .avatar-container {
+            width: 110px; height: 110px; border-radius: 50%; 
+            border: 4px solid var(--accent); overflow: hidden; background: #334155;
+            display: flex; align-items: center; justify-content: center;
+        }
         .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; }
+        .profile-details { flex: 1; min-width: 250px; }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+        }
         .profile-item span { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
         .profile-item strong { font-size: 15px; color: #f1f5f9; }
         
         .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logout-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--card); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #334155; }
+        .logout-btn:hover { background: #dc2626; }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: var(--card); padding: 15px; border-radius: 8px;
+            text-align: center; border: 1px solid #334155;
+        }
         .batting-stat { border-top: 4px solid var(--batting-color); }
         .bowling-stat { border-top: 4px solid var(--bowling-color); }
+        .stat-card h3 { margin: 0; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+        .stat-card p { margin: 8px 0 0 0; font-size: 22px; font-weight: bold; }
         
-        .form-container { background: var(--card); padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #334155; }
+        .form-container {
+            background: var(--card); padding: 20px; border-radius: 8px;
+            margin-bottom: 25px; border: 1px solid #334155;
+        }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
         .form-group { display: flex; flex-direction: column; }
-        .form-group input, .form-group select { padding: 8px; border: 1px solid #475569; border-radius: 4px; background-color: var(--input-bg); color: white; }
+        .form-group label { font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #cbd5e1; }
+        .form-group input, .form-group select {
+            padding: 8px; border: 1px solid #475569; border-radius: 4px;
+            background-color: var(--input-bg); color: white; font-size: 14px;
+        }
         
-        button.action-btn { grid-column: 1 / -1; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        button.action-btn {
+            grid-column: 1 / -1; color: white; border: none; padding: 10px;
+            font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px;
+        }
         .batting-btn { background: var(--batting-color); }
         .bowling-btn { background: var(--bowling-color); }
         .submit-btn { background: #0284c7; width: 100%; margin-top: 15px; font-size: 16px; }
         
-        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; margin-bottom: 25px; border: 1px solid #334155; }
+        h2 { margin-top: 40px; padding-bottom: 5px; border-bottom: 2px solid #334155; }
+        .batting-title { color: #60a5fa; }
+        .bowling-title { color: #4ade80; }
+        table {
+            width: 100%; border-collapse: collapse; background: var(--card);
+            border-radius: 8px; overflow: hidden; margin-bottom: 25px; border: 1px solid #334155;
+        }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
+        .batting-table th { background-color: var(--batting-color); color: white; }
+        .bowling-table th { background-color: var(--bowling-color); color: white; }
         
-        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; font-size: 20px; font-weight: bold; color: var(--accent); }
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85); display: flex; align-items: center;
+            justify-content: center; z-index: 1000; font-size: 20px; font-weight: bold; color: var(--accent);
+        }
     </style>
 </head>
 <body>
 
-<div id="loadingOverlay" class="hidden">Connecting...</div>
+<div id="loadingOverlay" class="hidden">Connecting to Cloud Database... Please Wait...</div>
 
 <div class="container">
-    <div id="authPanel" class="auth-box animate-card">
+
+    <div id="authPanel" class="auth-box">
         <div class="tabs">
             <button id="loginTab" class="tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
             <button id="registerTab" class="tab-btn" onclick="switchAuthTab('register')">Create Account</button>
         </div>
+        
         <div id="loginForm">
-            <div class="form-group"><label>Enter Name to Sign In</label><input type="text" id="loginUsername" placeholder="e.g., Sithum Hansika"></div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Enter Name to Sign In</label>
+                <input type="text" id="loginUsername" placeholder="e.g., Sithum Hansika">
+            </div>
             <button class="action-btn submit-btn" onclick="handleLogin()">Access Dashboard</button>
         </div>
+
         <div id="registerForm" class="hidden">
-            <div class="form-grid">
-                <div class="form-group" style="grid-column: 1/-1;"><label>Full Name</label><input type="text" id="regName"></div>
-                <div class="form-group"><label>Age</label><input type="number" id="regAge" value="15"></div>
-                <div class="form-group"><label>Height</label><input type="text" id="regHeight" value="5'7&quot;"></div>
-                <div class="form-group"><label>Weight (kg)</label><input type="number" id="regWeight" value="45"></div>
-                <div class="form-group"><label>Fav Bat</label><input type="text" id="regFavBat" value="SS Vintage"></div>
-                <div class="form-group"><label>Fav Batsman</label><input type="text" id="regFavBatsman" value="Sangakkara"></div>
-                <div class="form-group"><label>Fav Bowler</label><input type="text" id="regFavBowler" value="Malinga"></div>
-                <button class="action-btn submit-btn" style="background:#15803d; grid-column: 1/-1;" onclick="handleRegister()">Build Profile</button>
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="form-group" style="grid-column: 1/-1;">
+                    <label>Full Name</label>
+                    <input type="text" id="regName" placeholder="Full Name">
+                </div>
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" id="regAge" value="15">
+                </div>
+                <div class="form-group">
+                    <label>Height</label>
+                    <input type="text" id="regHeight" value="5'7&quot;">
+                </div>
+                <div class="form-group">
+                    <label>Weight (kg)</label>
+                    <input type="number" id="regWeight" value="45">
+                </div>
+                <div class="form-group">
+                    <label>Fav Batting Weapon</label>
+                    <input type="text" id="regFavBat" value="SS Vintage">
+                </div>
+                <div class="form-group">
+                    <label>Fav Batsman</label>
+                    <input type="text" id="regFavBatsman" value="Sangakkara">
+                </div>
+                <div class="form-group">
+                    <label>Fav Bowler</label>
+                    <input type="text" id="regFavBowler" value="Malinga">
+                </div>
+                <div class="form-group" style="grid-column: 1/-1;">
+                    <label>Upload Profile Picture (Select Photo File)</label>
+                    <input type="file" id="regPhotoFile" accept="image/*" style="background: none; border: none; padding: 5px 0;">
+                </div>
             </div>
+            <button class="action-btn submit-btn" style="background:#15803d;" onclick="handleRegister()">Build Profile Engine</button>
         </div>
     </div>
 
     <div id="appPanel" class="hidden">
-        <div class="header-actions"><button class="logout-btn" onclick="handleLogout()">Log Out</button></div>
+        <div class="header-actions">
+            <span style="font-weight: bold; color: var(--accent);">Status: Live Cloud Linked</span>
+            <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+        </div>
+
         <div class="profile-card">
-            <div class="avatar-container" id="playerAvatar"></div>
+            <div class="avatar-container" id="playerAvatar">
+                </div>
             <div class="profile-details">
-                <h1 id="displayName" style="margin:0;">-</h1>
+                <h1 style="margin:0; font-size: 28px;" id="displayName">-</h1>
                 <div class="profile-grid">
                     <div class="profile-item"><span>Age</span><strong id="displayAge">-</strong></div>
                     <div class="profile-item"><span>Height</span><strong id="displayHeight">-</strong></div>
                     <div class="profile-item"><span>Weight</span><strong id="displayWeight">-</strong></div>
+                    <div class="profile-item"><span>Preferred Bat</span><strong id="displayFavBat">-</strong></div>
+                    <div class="profile-item"><span>Fav Batsman</span><strong id="displayFavBatsman">-</strong></div>
+                    <div class="profile-item"><span>Fav Bowler</span><strong id="displayFavBowler">-</strong></div>
                 </div>
             </div>
         </div>
+
+        <h2 style="color: var(--accent);">🏆 Cloud Tournament Leaderboards</h2>
+        <div class="dashboard" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+            <div class="form-container" style="border-top: 5px solid #f97316; margin-bottom: 0;">
+                <h3 style="margin-top:0; color:#f97316;">🟠 Orange Cap (Most Runs)</h3>
+                <table style="margin-bottom: 0;" id="orangeCapTable">
+                    <thead><tr><th>Rank</th><th>Player Name</th><th>Runs</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="form-container" style="border-top: 5px solid #a855f7; margin-bottom: 0;">
+                <h3 style="margin-top:0; color:#a855f7;">🟣 Purple Cap (Most Wickets)</h3>
+                <table style="margin-bottom: 0;" id="purpleCapTable">
+                    <thead><tr><th>Rank</th><th>Player Name</th><th>Wickets</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
+
+        <h2 class="batting-title">🏏 Batting Records Terminal</h2>
+        <div class="dashboard">
+            <div class="stat-card batting-stat"><h3>Innings</h3><p id="batInnings">0</p></div>
+            <div class="stat-card batting-stat"><h3>Runs</h3><p id="batRuns">0</p></div>
+            <div class="stat-card batting-stat"><h3>Average</h3><p id="batAvg">0.00</p></div>
+            <div class="stat-card batting-stat"><h3>Strike Rate</h3><p id="batSR">0.00</p></div>
+        </div>
+
+        <div class="form-container">
+            <h3 style="margin-top:0; color:#60a5fa;">Log Batting Performance</h3>
+            <div class="form-grid">
+                <div class="form-group"><label>Date</label><input type="date" id="batDate"></div>
+                <div class="form-group"><label>Opponent</label><input type="text" id="batOpponent" placeholder="Opponent"></div>
+                <div class="form-group"><label>Runs Scored</label><input type="number" id="runs" min="0" value="0"></div>
+                <div class="form-group"><label>Balls Faced</label><input type="number" id="balls" min="0" value="0"></div>
+                <div class="form-group">
+                    <label>How Dismissed</label>
+                    <select id="howOut">
+                        <option value="Not Out">Not Out</option>
+                        <option value="Bowled">Bowled</option>
+                        <option value="Caught">Caught</option>
+                        <option value="LBW">LBW</option>
+                        <option value="Run Out">Run Out</option>
+                    </select>
+                </div>
+                <button class="action-btn batting-btn" onclick="saveBattingRecord()">Save Innings to Cloud</button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="batting-table" id="battingTable">
+                <thead><tr><th>Date</th><th>Opponent</th><th>Runs</th><th>Balls</th><th>S/R</th><th>Dismissal</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <h2 class="bowling-title">⚾ Bowling Records Terminal</h2>
+        <div class="dashboard">
+            <div class="stat-card bowling-stat"><h3>Innings</h3><p id="bowlInnings">0</p></div>
+            <div class="stat-card bowling-stat"><h3>Wickets</h3><p id="bowlWickets">0</p></div>
+            <div class="stat-card bowling-stat"><h3>Economy</h3><p id="bowlEcon">0.00</p></div>
+        </div>
+
+        <div class="form-container">
+            <h3 style="margin-top:0; color:#4ade80;">Log Bowling Performance</h3>
+            <div class="form-grid">
+                <div class="form-group"><label>Date</label><input type="date" id="bowlDate"></div>
+                <div class="form-group"><label>Opponent</label><input type="text" id="bowlOpponent" placeholder="Opponent"></div>
+                <div class="form-group"><label>Overs Bowled</label><input type="number" id="overs" min="0" step="0.1" value="0.0"></div>
+                <div class="form-group"><label>Maiden Overs</label><input type="number" id="maidens" min="0" value="0"></div>
+                <div class="form-group"><label>Runs Conceded</label><input type="number" id="runsConceded" min="0" value="0"></div>
+                <div class="form-group"><label>Wickets Taken</label><input type="number" id="wickets" min="0" value="0"></div>
+                <button class="action-btn bowling-btn" onclick="saveBowlingRecord()">Save Spell to Cloud</button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="bowling-table" id="bowlingTable">
+                <thead><tr><th>Date</th><th>Opponent</th><th>Overs</th><th>Maidens</th><th>Runs</th><th>Wickets</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script>
-    // [Keep your original logic here exactly as it was]
-    // The animations are handled by the new CSS classes 'animate-card' and 'fadeIn'
+    let masterDatabase = { profiles: [], batting: [], bowling: [] };
+    let currentUsername = "";
+    const defaultAvatar = `<svg viewBox="0 0 24 24" width="60" height="60" fill="#38bdf8"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>`;
+
+    const todayString = new Date().toISOString().split('T')[0];
+    document.getElementById('batDate').value = todayString;
+    document.getElementById('bowlDate').value = todayString;
+
+    function showLoading(show) {
+        document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+    }
+
+    async function fetchCloudDatabase() {
+        if(!CLOUD_URL || CLOUD_URL.includes("YOUR_WEB_APP")) return;
+        showLoading(true);
+        try {
+            let response = await fetch(CLOUD_URL);
+            masterDatabase = await response.json();
+        } catch(e) {
+            console.error("Cloud Fetch Failed", e);
+        }
+        showLoading(false);
+    }
+
+    async function sendCloudData(sheetName, dataObj) {
+        if(!CLOUD_URL || CLOUD_URL.includes("YOUR_WEB_APP")) { alert("Please setup your CLOUD_URL link!"); return; }
+        showLoading(true);
+        try {
+            await fetch(CLOUD_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sheet: sheetName, data: dataObj })
+            });
+            await new Promise(r => setTimeout(r, 1500));
+            await fetchCloudDatabase();
+        } catch(e) {
+            alert("Error sending records to cloud spreadsheet.");
+        }
+        showLoading(false);
+    }
+
+    function switchAuthTab(targetTab) {
+        if(targetTab === 'login') {
+            document.getElementById('loginTab').classList.add('active');
+            document.getElementById('registerTab').classList.remove('active');
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        } else {
+            document.getElementById('registerTab').classList.add('active');
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('loginForm').classList.add('hidden');
+        }
+    }
+
+    // Helper function to turn a user file into a Base64 text string
+    function convertFileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    async function handleRegister() {
+        const name = document.getElementById('regName').value.trim();
+        const age = document.getElementById('regAge').value;
+        const height = document.getElementById('regHeight').value;
+        const weight = document.getElementById('regWeight').value;
+        const favBat = document.getElementById('regFavBat').value;
+        const favBatsman = document.getElementById('regFavBatsman').value;
+        const favBowler = document.getElementById('regFavBowler').value;
+        const photoFileInput = document.getElementById('regPhotoFile');
+
+        if(!name) { alert("Please type a profile name!"); return; }
+
+        let imageString = "";
+        if (photoFileInput.files.length > 0) {
+            showLoading(true);
+            try {
+                // Convert the user's picked image file directly into Excel text string code!
+                imageString = await convertFileToBase64(photoFileInput.files[0]);
+            } catch (e) {
+                console.error("Image processing failed", e);
+            }
+        }
+
+        await fetchCloudDatabase();
+        let match = masterDatabase.profiles.find(p => p.name.toLowerCase() === name.toLowerCase());
+        if(match) { alert("An account with this name already exists in the cloud!"); return; }
+
+        let profileRow = { name, age, height, weight, favBat, favBatsman, favBowler, image: imageString };
+        await sendCloudData("Profiles", profileRow);
+        
+        alert("Cloud Registration complete! You can sign in now.");
+        switchAuthTab('login');
+        document.getElementById('loginUsername').value = name;
+    }
+
+    async function handleLogin() {
+        const input = document.getElementById('loginUsername').value.trim();
+        if(!input) return;
+
+        await fetchCloudDatabase();
+        let account = masterDatabase.profiles.find(p => p.name.toLowerCase() === input.toLowerCase());
+
+        if(account) {
+            currentUsername = account.name;
+            bootDashboard(account);
+        } else {
+            alert("Profile identity not found in cloud sheet database.");
+        }
+    }
+
     function bootDashboard(account) {
         document.getElementById('authPanel').classList.add('hidden');
         document.getElementById('appPanel').classList.remove('hidden');
-        document.getElementById('appPanel').classList.add('animate-card');
-        // ... rest of your boot function
+
+        document.getElementById('displayName').innerText = account.name;
+        document.getElementById('displayAge').innerText = account.age + " Yrs";
+        document.getElementById('displayHeight').innerText = account.height;
+        document.getElementById('displayWeight').innerText = account.weight + " kg";
+        document.getElementById('displayFavBat').innerText = account.favBat;
+        document.getElementById('displayFavBatsman').innerText = account.favBatsman;
+        document.getElementById('displayFavBowler').innerText = account.favBowler;
+
+        const avatarDiv = document.getElementById('playerAvatar');
+        // If image code exists, load it natively
+        if(account.image && account.image.startsWith("data:image")) {
+            avatarDiv.innerHTML = `<img src="${account.image}" alt="Profile">`;
+        } else {
+            avatarDiv.innerHTML = defaultAvatar;
+        }
+
+        calculateStats();
+    }
+
+    function calculateStats() {
+        let myBatting = masterDatabase.batting.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
+        let myBowling = masterDatabase.bowling.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
+
+        // Batting Calc
+        let runs = 0, balls = 0, outs = 0;
+        let batTbody = document.querySelector('#battingTable tbody');
+        batTbody.innerHTML = '';
+        
+        myBatting.forEach(b => {
+            runs += parseInt(b.runs);
+            balls += parseInt(b.balls);
+            if(b.howOut !== 'Not Out') outs++;
+            let sr = b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(2) : "0.00";
+            batTbody.innerHTML += `<tr><td>${b.date}</td><td>${b.opponent}</td><td><strong>${b.runs}</strong></td><td>${b.balls}</td><td>${sr}</td><td>${b.howOut}</td></tr>`;
+        });
+
+        document.getElementById('batInnings').innerText = myBatting.length;
+        document.getElementById('batRuns').innerText = runs;
+        document.getElementById('batAvg').innerText = outs > 0 ? (runs / outs).toFixed(2) : runs.toFixed(2);
+        document.getElementById('batSR').innerText = balls > 0 ? ((runs / balls) * 100).toFixed(2) : "0.00";
+
+        // Bowling Calc
+        let wickets = 0, runsConceded = 0;
+        let bowlTbody = document.querySelector('#bowlingTable tbody');
+        bowlTbody.innerHTML = '';
+
+        myBowling.forEach(w => {
+            wickets += parseInt(w.wickets);
+            runsConceded += parseInt(w.runsConceded);
+            bowlTbody.innerHTML += `<tr><td>${w.date}</td><td>${w.opponent}</td><td>${w.overs}</td><td>${w.maidens}</td><td>${w.runsConceded}</td><td><strong>${w.wickets}</strong></td></tr>`;
+        });
+
+        document.getElementById('bowlInnings').innerText = myBowling.length;
+        document.getElementById('bowlWickets').innerText = wickets;
+        document.getElementById('bowlEcon').innerText = myBowling.length > 0 ? (runsConceded / (myBowling.length * 2)).toFixed(2) : "0.00";
+
+        // Render Leaderboards
+        let runsMap = {}, wicketsMap = {};
+        masterDatabase.profiles.forEach(p => { runsMap[p.name] = 0; wicketsMap[p.name] = 0; });
+        masterDatabase.batting.forEach(b => { if(runsMap[b.player] !== undefined) runsMap[b.player] += parseInt(b.runs); });
+        masterDatabase.bowling.forEach(w => { if(wicketsMap[w.player] !== undefined) wicketsMap[w.player] += parseInt(w.wickets); });
+
+        let topBat = Object.keys(runsMap).map(k => ({name: k, runs: runsMap[k]})).sort((a,b)=>b.runs-a.runs);
+        let topBowl = Object.keys(wicketsMap).map(k => ({name: k, wickets: wicketsMap[k]})).sort((a,b)=>b.wickets-a.wickets);
+
+        document.querySelector('#orangeCapTable tbody').innerHTML = topBat.slice(0,5).map((p,i)=>`<tr><td>${i+1}</td><td>${p.name}</td><td><strong>${p.runs}</strong></td></tr>`).join('');
+        document.querySelector('#purpleCapTable tbody').innerHTML = topBowl.slice(0,5).map((p,i)=>`<tr><td>${i+1}</td><td>${p.name}</td><td><strong>${p.wickets}</strong></td></tr>`).join('');
+    }
+
+    async function saveBattingRecord() {
+        let data = {
+            player: currentUsername,
+            date: document.getElementById('batDate').value,
+            opponent: document.getElementById('batOpponent').value || "Match",
+            runs: document.getElementById('runs').value,
+            balls: document.getElementById('balls').value,
+            howOut: document.getElementById('howOut').value
+        };
+        await sendCloudData("Batting", data);
+        calculateStats();
+    }
+
+    async function saveBowlingRecord() {
+        let data = {
+            player: currentUsername,
+            date: document.getElementById('bowlDate').value,
+            opponent: document.getElementById('bowlOpponent').value || "Match",
+            overs: document.getElementById('overs').value,
+            maidens: document.getElementById('maidens').value,
+            runsConceded: document.getElementById('runsConceded').value,
+            wickets: document.getElementById('wickets').value
+        };
+        await sendCloudData("Bowling", data);
+        calculateStats();
+    }
+
+    function handleLogout() {
+        document.getElementById('appPanel').classList.add('hidden');
+        document.getElementById('authPanel').classList.remove('hidden');
+        document.getElementById('loginUsername').value = '';
     }
 </script>
+
 </body>
 </html>
