@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clubhouse Cricket Analytics Terminal</title>
+    <script>
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxWMhU90gKUFzSBMTItFuOlT2dfkA1KnLboKwpbkq_kSFJCaVh-QfF1gO-tStuGXtyuHw/exec";
+    </script>
+    <style>
+        :root {
+            --primary: #0f172a; --batting-color: #1e3a8a; --bowling-color: #15803d;
+            --accent: #38bdf8; --background: #0f172a; --card: #1e293b;
+            --text: #f8fafc; --input-bg: #334155;
+        }
+        
+        /* === ANIMATION ENGINE === */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-card { animation: fadeIn 0.6s ease-out forwards; opacity: 0; }
+        .dashboard, .form-container, .profile-card { animation: fadeIn 0.8s ease-out; }
+        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--background); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .hidden { display: none !important; }
+        
+        .auth-box { max-width: 450px; margin: 60px auto; background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid #334155; }
+        .auth-box h2 { text-align: center; margin-top: 0; color: var(--accent); }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #334155; }
+        .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: #94a3b8; font-weight: bold; cursor: pointer; text-align: center; font-size: 16px; }
+        .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+        
+        .profile-card { background: linear-gradient(135deg, #1e3a8a, #0f172a); padding: 25px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #334155; display: flex; align-items: center; gap: 25px; flex-wrap: wrap; }
+        .avatar-container { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--accent); overflow: hidden; background: #334155; display: flex; align-items: center; justify-content: center; }
+        .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; }
+        .profile-item span { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+        .profile-item strong { font-size: 15px; color: #f1f5f9; }
+        
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #334155; }
+        .batting-stat { border-top: 4px solid var(--batting-color); }
+        .bowling-stat { border-top: 4px solid var(--bowling-color); }
+        
+        .form-container { background: var(--card); padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #334155; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group input, .form-group select { padding: 8px; border: 1px solid #475569; border-radius: 4px; background-color: var(--input-bg); color: white; }
+        
+        button.action-btn { grid-column: 1 / -1; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .batting-btn { background: var(--batting-color); }
+        .bowling-btn { background: var(--bowling-color); }
+        .submit-btn { background: #0284c7; width: 100%; margin-top: 15px; font-size: 16px; }
+        
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; margin-bottom: 25px; border: 1px solid #334155; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
+        
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; font-size: 20px; font-weight: bold; color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay" class="hidden">Connecting...</div>
+
+<div class="container">
+    <div id="authPanel" class="auth-box animate-card">
+        <div class="tabs">
+            <button id="loginTab" class="tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
+            <button id="registerTab" class="tab-btn" onclick="switchAuthTab('register')">Create Account</button>
+        </div>
+        <div id="loginForm">
+            <div class="form-group"><label>Enter Name to Sign In</label><input type="text" id="loginUsername" placeholder="e.g., Sithum Hansika"></div>
+            <button class="action-btn submit-btn" onclick="handleLogin()">Access Dashboard</button>
+        </div>
+        <div id="registerForm" class="hidden">
+            <div class="form-grid">
+                <div class="form-group" style="grid-column: 1/-1;"><label>Full Name</label><input type="text" id="regName"></div>
+                <div class="form-group"><label>Age</label><input type="number" id="regAge" value="15"></div>
+                <div class="form-group"><label>Height</label><input type="text" id="regHeight" value="5'7&quot;"></div>
+                <div class="form-group"><label>Weight (kg)</label><input type="number" id="regWeight" value="45"></div>
+                <div class="form-group"><label>Fav Bat</label><input type="text" id="regFavBat" value="SS Vintage"></div>
+                <div class="form-group"><label>Fav Batsman</label><input type="text" id="regFavBatsman" value="Sangakkara"></div>
+                <div class="form-group"><label>Fav Bowler</label><input type="text" id="regFavBowler" value="Malinga"></div>
+                <button class="action-btn submit-btn" style="background:#15803d; grid-column: 1/-1;" onclick="handleRegister()">Build Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="appPanel" class="hidden">
+        <div class="header-actions"><button class="logout-btn" onclick="handleLogout()">Log Out</button></div>
+        <div class="profile-card">
+            <div class="avatar-container" id="playerAvatar"></div>
+            <div class="profile-details">
+                <h1 id="displayName" style="margin:0;">-</h1>
+                <div class="profile-grid">
+                    <div class="profile-item"><span>Age</span><strong id="displayAge">-</strong></div>
+                    <div class="profile-item"><span>Height</span><strong id="displayHeight">-</strong></div>
+                    <div class="profile-item"><span>Weight</span><strong id="displayWeight">-</strong></div>
+                </div>
+            </div>
+        </div>
+        </div>
+</div>
+
+<script>
+    // [Keep your original logic here exactly as it was]
+    // The animations are handled by the new CSS classes 'animate-card' and 'fadeIn'
+    function bootDashboard(account) {
+        document.getElementById('authPanel').classList.add('hidden');
+        document.getElementById('appPanel').classList.remove('hidden');
+        document.getElementById('appPanel').classList.add('animate-card');
+        // ... rest of your boot function
+    }
+</script>
+</body>
+</html>
