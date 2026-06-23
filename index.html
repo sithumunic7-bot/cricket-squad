@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clubhouse Cricket Analytics Terminal</title>
     <script>
-        // =========================================================================
-        // LIVE GOOGLE SHEET CLOUD SERVER CONNECTION (HARDCODED)
-        // =========================================================================
         const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxWMhU90gKUFzSBMTItFuOlT2dfkA1KnLboKwpbkq_kSFJCaVh-QfF1gO-tStuGXtyuHw/exec";
-        // =========================================================================
     </script>
     <style>
         :root {
@@ -142,7 +138,6 @@
 <div id="loadingOverlay" class="hidden">Connecting to Cloud Database... Please Wait...</div>
 
 <div class="container">
-
     <div id="authPanel" class="auth-box">
         <div class="tabs">
             <button id="loginTab" class="tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
@@ -163,30 +158,12 @@
                     <label>Full Name</label>
                     <input type="text" id="regName" placeholder="Full Name">
                 </div>
-                <div class="form-group">
-                    <label>Age</label>
-                    <input type="number" id="regAge" value="15">
-                </div>
-                <div class="form-group">
-                    <label>Height</label>
-                    <input type="text" id="regHeight" value="5'7&quot;">
-                </div>
-                <div class="form-group">
-                    <label>Weight (kg)</label>
-                    <input type="number" id="regWeight" value="45">
-                </div>
-                <div class="form-group">
-                    <label>Fav Batting Weapon</label>
-                    <input type="text" id="regFavBat" value="SS Vintage">
-                </div>
-                <div class="form-group">
-                    <label>Fav Batsman</label>
-                    <input type="text" id="regFavBatsman" value="Sangakkara">
-                </div>
-                <div class="form-group">
-                    <label>Fav Bowler</label>
-                    <input type="text" id="regFavBowler" value="Malinga">
-                </div>
+                <div class="form-group"><label>Age</label><input type="number" id="regAge" value="15"></div>
+                <div class="form-group"><label>Height</label><input type="text" id="regHeight" value="5'7&quot;"></div>
+                <div class="form-group"><label>Weight (kg)</label><input type="number" id="regWeight" value="45"></div>
+                <div class="form-group"><label>Fav Batting Weapon</label><input type="text" id="regFavBat" value="SS Vintage"></div>
+                <div class="form-group"><label>Fav Batsman</label><input type="text" id="regFavBatsman" value="Sangakkara"></div>
+                <div class="form-group"><label>Fav Bowler</label><input type="text" id="regFavBowler" value="Malinga"></div>
                 <div class="form-group" style="grid-column: 1/-1;">
                     <label>Upload Profile Picture (Select Photo File)</label>
                     <input type="file" id="regPhotoFile" accept="image/*" style="background: none; border: none; padding: 5px 0;">
@@ -203,8 +180,7 @@
         </div>
 
         <div class="profile-card">
-            <div class="avatar-container" id="playerAvatar">
-                </div>
+            <div class="avatar-container" id="playerAvatar"></div>
             <div class="profile-details">
                 <h1 style="margin:0; font-size: 28px;" id="displayName">-</h1>
                 <div class="profile-grid">
@@ -222,18 +198,11 @@
         <div class="dashboard" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
             <div class="form-container" style="border-top: 5px solid #f97316; margin-bottom: 0;">
                 <h3 style="margin-top:0; color:#f97316;">🟠 Orange Cap (Most Runs)</h3>
-                <table style="margin-bottom: 0;" id="orangeCapTable">
-                    <thead><tr><th>Rank</th><th>Player Name</th><th>Runs</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <table style="margin-bottom: 0;" id="orangeCapTable"><thead><tr><th>Rank</th><th>Player Name</th><th>Runs</th></tr></thead><tbody></tbody></table>
             </div>
-
             <div class="form-container" style="border-top: 5px solid #a855f7; margin-bottom: 0;">
                 <h3 style="margin-top:0; color:#a855f7;">🟣 Purple Cap (Most Wickets)</h3>
-                <table style="margin-bottom: 0;" id="purpleCapTable">
-                    <thead><tr><th>Rank</th><th>Player Name</th><th>Wickets</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <table style="margin-bottom: 0;" id="purpleCapTable"><thead><tr><th>Rank</th><th>Player Name</th><th>Wickets</th></tr></thead><tbody></tbody></table>
             </div>
         </div>
 
@@ -242,6 +211,8 @@
             <div class="stat-card batting-stat"><h3>Innings</h3><p id="batInnings">0</p></div>
             <div class="stat-card batting-stat"><h3>Runs</h3><p id="batRuns">0</p></div>
             <div class="stat-card batting-stat"><h3>Average</h3><p id="batAvg">0.00</p></div>
+            <div class="stat-card batting-stat"><h3>Highest Score</h3><p id="batHS">0</p></div>
+            <div class="stat-card batting-stat"><h3>50s / 100s</h3><p id="bat50100">0 / 0</p></div>
             <div class="stat-card batting-stat"><h3>Strike Rate</h3><p id="batSR">0.00</p></div>
         </div>
 
@@ -277,7 +248,10 @@
         <div class="dashboard">
             <div class="stat-card bowling-stat"><h3>Innings</h3><p id="bowlInnings">0</p></div>
             <div class="stat-card bowling-stat"><h3>Wickets</h3><p id="bowlWickets">0</p></div>
+            <div class="stat-card bowling-stat"><h3>Bowling Avg</h3><p id="bowlAvg">0.00</p></div>
             <div class="stat-card bowling-stat"><h3>Economy</h3><p id="bowlEcon">0.00</p></div>
+            <div class="stat-card bowling-stat"><h3>Best Bowling</h3><p id="bowlBest">0/0</p></div>
+            <div class="stat-card bowling-stat"><h3>Hauls (3w/5w)</h3><p id="bowlHauls">0 / 0</p></div>
         </div>
 
         <div class="form-container">
@@ -311,9 +285,7 @@
     document.getElementById('batDate').value = todayString;
     document.getElementById('bowlDate').value = todayString;
 
-    function showLoading(show) {
-        document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
-    }
+    function showLoading(show) { document.getElementById('loadingOverlay').classList.toggle('hidden', !show); }
 
     async function fetchCloudDatabase() {
         if(!CLOUD_URL || CLOUD_URL.includes("YOUR_WEB_APP")) return;
@@ -321,9 +293,7 @@
         try {
             let response = await fetch(CLOUD_URL);
             masterDatabase = await response.json();
-        } catch(e) {
-            console.error("Cloud Fetch Failed", e);
-        }
+        } catch(e) { console.error("Cloud Fetch Failed", e); }
         showLoading(false);
     }
 
@@ -332,40 +302,29 @@
         showLoading(true);
         try {
             await fetch(CLOUD_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
+                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ sheet: sheetName, data: dataObj })
             });
             await new Promise(r => setTimeout(r, 1500));
             await fetchCloudDatabase();
-        } catch(e) {
-            alert("Error sending records to cloud spreadsheet.");
-        }
+        } catch(e) { alert("Error sending records to cloud spreadsheet."); }
         showLoading(false);
     }
 
     function switchAuthTab(targetTab) {
         if(targetTab === 'login') {
-            document.getElementById('loginTab').classList.add('active');
-            document.getElementById('registerTab').classList.remove('active');
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginTab').classList.add('active'); document.getElementById('registerTab').classList.remove('active');
+            document.getElementById('loginForm').classList.remove('hidden'); document.getElementById('registerForm').classList.add('hidden');
         } else {
-            document.getElementById('registerTab').classList.add('active');
-            document.getElementById('loginTab').classList.remove('active');
-            document.getElementById('registerForm').classList.remove('hidden');
-            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerTab').classList.add('active'); document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('registerForm').classList.remove('hidden'); document.getElementById('loginForm').classList.add('hidden');
         }
     }
 
-    // Helper function to turn a user file into a Base64 text string
     function convertFileToBase64(file) {
         return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
+            const reader = new FileReader(); reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
         });
     }
 
@@ -380,49 +339,33 @@
         const photoFileInput = document.getElementById('regPhotoFile');
 
         if(!name) { alert("Please type a profile name!"); return; }
-
         let imageString = "";
         if (photoFileInput.files.length > 0) {
             showLoading(true);
-            try {
-                // Convert the user's picked image file directly into Excel text string code!
-                imageString = await convertFileToBase64(photoFileInput.files[0]);
-            } catch (e) {
-                console.error("Image processing failed", e);
-            }
+            try { imageString = await convertFileToBase64(photoFileInput.files[0]); } catch (e) { console.error(e); }
         }
 
         await fetchCloudDatabase();
         let match = masterDatabase.profiles.find(p => p.name.toLowerCase() === name.toLowerCase());
-        if(match) { alert("An account with this name already exists in the cloud!"); return; }
+        if(match) { alert("Account already exists!"); return; }
 
         let profileRow = { name, age, height, weight, favBat, favBatsman, favBowler, image: imageString };
         await sendCloudData("Profiles", profileRow);
-        
-        alert("Cloud Registration complete! You can sign in now.");
-        switchAuthTab('login');
-        document.getElementById('loginUsername').value = name;
+        alert("Registration complete!");
+        switchAuthTab('login'); document.getElementById('loginUsername').value = name;
     }
 
     async function handleLogin() {
         const input = document.getElementById('loginUsername').value.trim();
         if(!input) return;
-
         await fetchCloudDatabase();
         let account = masterDatabase.profiles.find(p => p.name.toLowerCase() === input.toLowerCase());
-
-        if(account) {
-            currentUsername = account.name;
-            bootDashboard(account);
-        } else {
-            alert("Profile identity not found in cloud sheet database.");
-        }
+        if(account) { currentUsername = account.name; bootDashboard(account); } else { alert("Profile not found."); }
     }
 
     function bootDashboard(account) {
         document.getElementById('authPanel').classList.add('hidden');
         document.getElementById('appPanel').classList.remove('hidden');
-
         document.getElementById('displayName').innerText = account.name;
         document.getElementById('displayAge').innerText = account.age + " Yrs";
         document.getElementById('displayHeight').innerText = account.height;
@@ -430,15 +373,8 @@
         document.getElementById('displayFavBat').innerText = account.favBat;
         document.getElementById('displayFavBatsman').innerText = account.favBatsman;
         document.getElementById('displayFavBowler').innerText = account.favBowler;
-
         const avatarDiv = document.getElementById('playerAvatar');
-        // If image code exists, load it natively
-        if(account.image && account.image.startsWith("data:image")) {
-            avatarDiv.innerHTML = `<img src="${account.image}" alt="Profile">`;
-        } else {
-            avatarDiv.innerHTML = defaultAvatar;
-        }
-
+        if(account.image && account.image.startsWith("data:image")) { avatarDiv.innerHTML = `<img src="${account.image}" alt="Profile">`; } else { avatarDiv.innerHTML = defaultAvatar; }
         calculateStats();
     }
 
@@ -446,85 +382,64 @@
         let myBatting = masterDatabase.batting.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
         let myBowling = masterDatabase.bowling.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
 
-        // Batting Calc
-        let runs = 0, balls = 0, outs = 0;
-        let batTbody = document.querySelector('#battingTable tbody');
-        batTbody.innerHTML = '';
-        
+        // Batting
+        let runs = 0, balls = 0, outs = 0, hs = 0, fifty = 0, hundred = 0;
+        let batTbody = document.querySelector('#battingTable tbody'); batTbody.innerHTML = '';
         myBatting.forEach(b => {
-            runs += parseInt(b.runs);
-            balls += parseInt(b.balls);
+            let r = parseInt(b.runs);
+            runs += r; balls += parseInt(b.balls);
+            if(r > hs) hs = r;
+            if(r >= 100) hundred++; else if(r >= 50) fifty++;
             if(b.howOut !== 'Not Out') outs++;
-            let sr = b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(2) : "0.00";
-            batTbody.innerHTML += `<tr><td>${b.date}</td><td>${b.opponent}</td><td><strong>${b.runs}</strong></td><td>${b.balls}</td><td>${sr}</td><td>${b.howOut}</td></tr>`;
+            let sr = b.balls > 0 ? ((r / b.balls) * 100).toFixed(2) : "0.00";
+            batTbody.innerHTML += `<tr><td>${b.date}</td><td>${b.opponent}</td><td><strong>${r}</strong></td><td>${b.balls}</td><td>${sr}</td><td>${b.howOut}</td></tr>`;
         });
-
         document.getElementById('batInnings').innerText = myBatting.length;
         document.getElementById('batRuns').innerText = runs;
         document.getElementById('batAvg').innerText = outs > 0 ? (runs / outs).toFixed(2) : runs.toFixed(2);
         document.getElementById('batSR').innerText = balls > 0 ? ((runs / balls) * 100).toFixed(2) : "0.00";
+        document.getElementById('batHS').innerText = hs;
+        document.getElementById('bat50100').innerText = `${fifty} / ${hundred}`;
 
-        // Bowling Calc
-        let wickets = 0, runsConceded = 0;
-        let bowlTbody = document.querySelector('#bowlingTable tbody');
-        bowlTbody.innerHTML = '';
-
+        // Bowling
+        let wickets = 0, runsConceded = 0, bestW = 0, bestR = 0, haul3 = 0, haul5 = 0;
+        let bowlTbody = document.querySelector('#bowlingTable tbody'); bowlTbody.innerHTML = '';
         myBowling.forEach(w => {
-            wickets += parseInt(w.wickets);
-            runsConceded += parseInt(w.runsConceded);
-            bowlTbody.innerHTML += `<tr><td>${w.date}</td><td>${w.opponent}</td><td>${w.overs}</td><td>${w.maidens}</td><td>${w.runsConceded}</td><td><strong>${w.wickets}</strong></td></tr>`;
+            let wk = parseInt(w.wickets); let rc = parseInt(w.runsConceded);
+            wickets += wk; runsConceded += rc;
+            if(wk >= 5) haul5++; else if(wk >= 3) haul3++;
+            if(wk > bestW || (wk === bestW && rc < bestR)) { bestW = wk; bestR = rc; }
+            bowlTbody.innerHTML += `<tr><td>${w.date}</td><td>${w.opponent}</td><td>${w.overs}</td><td>${w.maidens}</td><td>${rc}</td><td><strong>${wk}</strong></td></tr>`;
         });
-
         document.getElementById('bowlInnings').innerText = myBowling.length;
         document.getElementById('bowlWickets').innerText = wickets;
-        document.getElementById('bowlEcon').innerText = myBowling.length > 0 ? (runsConceded / (myBowling.length * 2)).toFixed(2) : "0.00";
+        document.getElementById('bowlAvg').innerText = wickets > 0 ? (runsConceded / wickets).toFixed(2) : "0.00";
+        document.getElementById('bowlEcon').innerText = myBowling.length > 0 ? (runsConceded / (myBowling.reduce((a,b)=>a+parseFloat(b.overs),0))).toFixed(2) : "0.00";
+        document.getElementById('bowlBest').innerText = `${bestW}/${bestR}`;
+        document.getElementById('bowlHauls').innerText = `${haul3} / ${haul5}`;
 
-        // Render Leaderboards
+        // Leaderboards
         let runsMap = {}, wicketsMap = {};
         masterDatabase.profiles.forEach(p => { runsMap[p.name] = 0; wicketsMap[p.name] = 0; });
         masterDatabase.batting.forEach(b => { if(runsMap[b.player] !== undefined) runsMap[b.player] += parseInt(b.runs); });
         masterDatabase.bowling.forEach(w => { if(wicketsMap[w.player] !== undefined) wicketsMap[w.player] += parseInt(w.wickets); });
-
         let topBat = Object.keys(runsMap).map(k => ({name: k, runs: runsMap[k]})).sort((a,b)=>b.runs-a.runs);
         let topBowl = Object.keys(wicketsMap).map(k => ({name: k, wickets: wicketsMap[k]})).sort((a,b)=>b.wickets-a.wickets);
-
         document.querySelector('#orangeCapTable tbody').innerHTML = topBat.slice(0,5).map((p,i)=>`<tr><td>${i+1}</td><td>${p.name}</td><td><strong>${p.runs}</strong></td></tr>`).join('');
         document.querySelector('#purpleCapTable tbody').innerHTML = topBowl.slice(0,5).map((p,i)=>`<tr><td>${i+1}</td><td>${p.name}</td><td><strong>${p.wickets}</strong></td></tr>`).join('');
     }
 
     async function saveBattingRecord() {
-        let data = {
-            player: currentUsername,
-            date: document.getElementById('batDate').value,
-            opponent: document.getElementById('batOpponent').value || "Match",
-            runs: document.getElementById('runs').value,
-            balls: document.getElementById('balls').value,
-            howOut: document.getElementById('howOut').value
-        };
-        await sendCloudData("Batting", data);
-        calculateStats();
+        let data = { player: currentUsername, date: document.getElementById('batDate').value, opponent: document.getElementById('batOpponent').value || "Match", runs: document.getElementById('runs').value, balls: document.getElementById('balls').value, howOut: document.getElementById('howOut').value };
+        await sendCloudData("Batting", data); calculateStats();
     }
 
     async function saveBowlingRecord() {
-        let data = {
-            player: currentUsername,
-            date: document.getElementById('bowlDate').value,
-            opponent: document.getElementById('bowlOpponent').value || "Match",
-            overs: document.getElementById('overs').value,
-            maidens: document.getElementById('maidens').value,
-            runsConceded: document.getElementById('runsConceded').value,
-            wickets: document.getElementById('wickets').value
-        };
-        await sendCloudData("Bowling", data);
-        calculateStats();
+        let data = { player: currentUsername, date: document.getElementById('bowlDate').value, opponent: document.getElementById('bowlOpponent').value || "Match", overs: document.getElementById('overs').value, maidens: document.getElementById('maidens').value, runsConceded: document.getElementById('runsConceded').value, wickets: document.getElementById('wickets').value };
+        await sendCloudData("Bowling", data); calculateStats();
     }
 
-    function handleLogout() {
-        document.getElementById('appPanel').classList.add('hidden');
-        document.getElementById('authPanel').classList.remove('hidden');
-        document.getElementById('loginUsername').value = '';
-    }
+    function handleLogout() { document.getElementById('appPanel').classList.add('hidden'); document.getElementById('authPanel').classList.remove('hidden'); document.getElementById('loginUsername').value = ''; }
 </script>
-
 </body>
 </html>
