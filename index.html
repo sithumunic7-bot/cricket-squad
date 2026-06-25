@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clubhouse Cricket Analytics Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxWMhU90gKUFzSBMTItFuOlT2dfkA1KnLboKwpbkq_kSFJCaVh-QfF1gO-tStuGXtyuHw/exec";
     </script>
@@ -26,7 +27,7 @@
         .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #334155; }
         .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: #94a3b8; font-weight: bold; cursor: pointer; text-align: center; font-size: 16px; }
         .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
-        .profile-card { background: linear-gradient(135deg, #1e3a8a, #0f172a); padding: 25px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid #334155; display: flex; align-items: center; gap: 25px; flex-wrap: wrap; }
+        .profile-card { background: linear-gradient(135deg, #1e3a8a, #0f172a); padding: 25px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #334155; display: flex; align-items: center; gap: 25px; flex-wrap: wrap; }
         .avatar-container { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--accent); overflow: hidden; background: #334155; display: flex; align-items: center; justify-content: center; }
         .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
         .profile-details { flex: 1; min-width: 250px; }
@@ -50,6 +51,9 @@
         .batting-btn { background: var(--batting-color); }
         .bowling-btn { background: var(--bowling-color); }
         .submit-btn { background: #0284c7; width: 100%; margin-top: 15px; font-size: 16px; }
+        h2 { margin-top: 40px; padding-bottom: 5px; border-bottom: 2px solid #334155; }
+        .batting-title { color: #60a5fa; }
+        .bowling-title { color: #4ade80; }
         table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; margin-bottom: 25px; border: 1px solid #334155; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
         .batting-table th { background-color: var(--batting-color); color: white; }
@@ -76,20 +80,14 @@
         </div>
         <div id="registerForm" class="hidden">
             <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
-                <div class="form-group" style="grid-column: 1/-1;">
-                    <label>Full Name</label>
-                    <input type="text" id="regName" placeholder="Full Name">
-                </div>
+                <div class="form-group" style="grid-column: 1/-1;"><label>Full Name</label><input type="text" id="regName" placeholder="Full Name"></div>
                 <div class="form-group"><label>Age</label><input type="number" id="regAge" value="15"></div>
                 <div class="form-group"><label>Height</label><input type="text" id="regHeight" value="5'7&quot;"></div>
                 <div class="form-group"><label>Weight (kg)</label><input type="number" id="regWeight" value="45"></div>
                 <div class="form-group"><label>Fav Batting Weapon</label><input type="text" id="regFavBat" value="SS Vintage"></div>
                 <div class="form-group"><label>Fav Batsman</label><input type="text" id="regFavBatsman" value="Sangakkara"></div>
                 <div class="form-group"><label>Fav Bowler</label><input type="text" id="regFavBowler" value="Malinga"></div>
-                <div class="form-group" style="grid-column: 1/-1;">
-                    <label>Upload Profile Picture (Select Photo File)</label>
-                    <input type="file" id="regPhotoFile" accept="image/*" style="background: none; border: none; padding: 5px 0;">
-                </div>
+                <div class="form-group" style="grid-column: 1/-1;"><label>Upload Profile Picture</label><input type="file" id="regPhotoFile" accept="image/*"></div>
             </div>
             <button class="action-btn submit-btn" style="background:#15803d;" onclick="handleRegister()">Build Profile Engine</button>
         </div>
@@ -100,6 +98,7 @@
             <span style="font-weight: bold; color: var(--accent);">Status: Live Cloud Linked</span>
             <button class="logout-btn" onclick="handleLogout()">Log Out</button>
         </div>
+
         <div class="profile-card">
             <div class="avatar-container" id="playerAvatar"></div>
             <div class="profile-details">
@@ -115,15 +114,21 @@
             </div>
         </div>
 
+        <h2 style="color: var(--accent);">📊 Performance Trends</h2>
+        <div class="dashboard" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-container"><canvas id="battingChart"></canvas></div>
+            <div class="form-container"><canvas id="bowlingChart"></canvas></div>
+        </div>
+
         <h2 style="color: var(--accent);">🏆 Cloud Tournament Leaderboards</h2>
-        <div class="dashboard" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+        <div class="dashboard" style="grid-template-columns: 1fr 1fr;">
             <div class="form-container" style="border-top: 5px solid #f97316; margin-bottom: 0;">
-                <h3 style="margin-top:0; color:#f97316;">🟠 Orange Cap (Most Runs)</h3>
-                <table style="margin-bottom: 0;" id="orangeCapTable"><thead><tr><th>Rank</th><th>Player Name</th><th>Runs</th></tr></thead><tbody></tbody></table>
+                <h3 style="margin-top:0; color:#f97316;">🟠 Orange Cap</h3>
+                <table id="orangeCapTable"><thead><tr><th>Rank</th><th>Name</th><th>Runs</th></tr></thead><tbody></tbody></table>
             </div>
             <div class="form-container" style="border-top: 5px solid #a855f7; margin-bottom: 0;">
-                <h3 style="margin-top:0; color:#a855f7;">🟣 Purple Cap (Most Wickets)</h3>
-                <table style="margin-bottom: 0;" id="purpleCapTable"><thead><tr><th>Rank</th><th>Player Name</th><th>Wickets</th></tr></thead><tbody></tbody></table>
+                <h3 style="margin-top:0; color:#a855f7;">🟣 Purple Cap</h3>
+                <table id="purpleCapTable"><thead><tr><th>Rank</th><th>Name</th><th>Wickets</th></tr></thead><tbody></tbody></table>
             </div>
         </div>
 
@@ -132,68 +137,47 @@
             <div class="stat-card batting-stat"><h3>Innings</h3><p id="batInnings">0</p></div>
             <div class="stat-card batting-stat"><h3>Runs</h3><p id="batRuns">0</p></div>
             <div class="stat-card batting-stat"><h3>Average</h3><p id="batAvg">0.00</p></div>
-            <div class="stat-card batting-stat"><h3>Highest Score</h3><p id="batHS">0</p></div>
-            <div class="stat-card batting-stat"><h3>50s / 100s</h3><p id="bat50100">0 / 0</p></div>
-            <div class="stat-card batting-stat"><h3>Strike Rate</h3><p id="batSR">0.00</p></div>
+            <div class="stat-card batting-stat"><h3>HS</h3><p id="batHS">0</p></div>
+            <div class="stat-card batting-stat"><h3>50s/100s</h3><p id="bat50100">0/0</p></div>
+            <div class="stat-card batting-stat"><h3>SR</h3><p id="batSR">0.00</p></div>
         </div>
 
         <div class="form-container">
             <h3 style="margin-top:0; color:#60a5fa;">Log Batting Performance</h3>
             <div class="form-grid">
                 <div class="form-group"><label>Date</label><input type="date" id="batDate"></div>
-                <div class="form-group"><label>Opponent</label><input type="text" id="batOpponent" placeholder="Opponent"></div>
-                <div class="form-group"><label>Runs Scored</label><input type="number" id="runs" min="0" value="0"></div>
-                <div class="form-group"><label>Balls Faced</label><input type="number" id="balls" min="0" value="0"></div>
-                <div class="form-group">
-                    <label>How Dismissed</label>
-                    <select id="howOut">
-                        <option value="Not Out">Not Out</option>
-                        <option value="Bowled">Bowled</option>
-                        <option value="Caught">Caught</option>
-                        <option value="LBW">LBW</option>
-                        <option value="Run Out">Run Out</option>
-                    </select>
-                </div>
-                <button class="action-btn batting-btn" onclick="saveBattingRecord()">Save Innings to Cloud</button>
+                <div class="form-group"><label>Opponent</label><input type="text" id="batOpponent"></div>
+                <div class="form-group"><label>Runs</label><input type="number" id="runs" value="0"></div>
+                <div class="form-group"><label>Balls</label><input type="number" id="balls" value="0"></div>
+                <div class="form-group"><label>Dismissal</label><select id="howOut"><option>Not Out</option><option>Bowled</option><option>Caught</option><option>LBW</option><option>Run Out</option></select></div>
+                <button class="action-btn batting-btn" onclick="saveBattingRecord()">Save to Cloud</button>
             </div>
         </div>
-
-        <div style="overflow-x: auto;">
-            <table class="batting-table" id="battingTable">
-                <thead><tr><th>Date</th><th>Opponent</th><th>Runs</th><th>Balls</th><th>S/R</th><th>Dismissal</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        <table class="batting-table" id="battingTable"><thead><tr><th>Date</th><th>Opp</th><th>Runs</th><th>Balls</th><th>S/R</th><th>Out</th></tr></thead><tbody></tbody></table>
 
         <h2 class="bowling-title">⚾ Bowling Records Terminal</h2>
         <div class="dashboard">
             <div class="stat-card bowling-stat"><h3>Innings</h3><p id="bowlInnings">0</p></div>
             <div class="stat-card bowling-stat"><h3>Wickets</h3><p id="bowlWickets">0</p></div>
-            <div class="stat-card bowling-stat"><h3>Bowling Avg</h3><p id="bowlAvg">0.00</p></div>
-            <div class="stat-card bowling-stat"><h3>Economy</h3><p id="bowlEcon">0.00</p></div>
-            <div class="stat-card bowling-stat"><h3>Best Bowling</h3><p id="bowlBest">0/0</p></div>
-            <div class="stat-card bowling-stat"><h3>Hauls (3w/5w)</h3><p id="bowlHauls">0 / 0</p></div>
+            <div class="stat-card bowling-stat"><h3>Avg</h3><p id="bowlAvg">0.00</p></div>
+            <div class="stat-card bowling-stat"><h3>Econ</h3><p id="bowlEcon">0.00</p></div>
+            <div class="stat-card bowling-stat"><h3>Best</h3><p id="bowlBest">0/0</p></div>
+            <div class="stat-card bowling-stat"><h3>Hauls</h3><p id="bowlHauls">0/0</p></div>
         </div>
 
         <div class="form-container">
             <h3 style="margin-top:0; color:#4ade80;">Log Bowling Performance</h3>
             <div class="form-grid">
                 <div class="form-group"><label>Date</label><input type="date" id="bowlDate"></div>
-                <div class="form-group"><label>Opponent</label><input type="text" id="bowlOpponent" placeholder="Opponent"></div>
-                <div class="form-group"><label>Overs Bowled</label><input type="number" id="overs" min="0" step="0.1" value="0.0"></div>
-                <div class="form-group"><label>Maiden Overs</label><input type="number" id="maidens" min="0" value="0"></div>
-                <div class="form-group"><label>Runs Conceded</label><input type="number" id="runsConceded" min="0" value="0"></div>
-                <div class="form-group"><label>Wickets Taken</label><input type="number" id="wickets" min="0" value="0"></div>
-                <button class="action-btn bowling-btn" onclick="saveBowlingRecord()">Save Spell to Cloud</button>
+                <div class="form-group"><label>Opponent</label><input type="text" id="bowlOpponent"></div>
+                <div class="form-group"><label>Overs</label><input type="number" id="overs" step="0.1" value="0.0"></div>
+                <div class="form-group"><label>Maidens</label><input type="number" id="maidens" value="0"></div>
+                <div class="form-group"><label>Runs</label><input type="number" id="runsConceded" value="0"></div>
+                <div class="form-group"><label>Wickets</label><input type="number" id="wickets" value="0"></div>
+                <button class="action-btn bowling-btn" onclick="saveBowlingRecord()">Save to Cloud</button>
             </div>
         </div>
-
-        <div style="overflow-x: auto;">
-            <table class="bowling-table" id="bowlingTable">
-                <thead><tr><th>Date</th><th>Opponent</th><th>Overs</th><th>Maidens</th><th>Runs</th><th>Wickets</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        <table class="bowling-table" id="bowlingTable"><thead><tr><th>Date</th><th>Opp</th><th>Overs</th><th>Mdns</th><th>Runs</th><th>Wkts</th></tr></thead><tbody></tbody></table>
     </div>
 </div>
 
@@ -232,6 +216,34 @@
         showLoading(false);
     }
 
+    function drawCharts() {
+        if(window.batChart) window.batChart.destroy();
+        if(window.bowlChart) window.bowlChart.destroy();
+
+        const myBatting = masterDatabase.batting.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
+        const myBowling = masterDatabase.bowling.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
+
+        const batCtx = document.getElementById('battingChart').getContext('2d');
+        window.batChart = new Chart(batCtx, {
+            type: 'line',
+            data: {
+                labels: myBatting.map(b => b.date),
+                datasets: [{ label: 'Runs Scored', data: myBatting.map(b => b.runs), borderColor: '#60a5fa', tension: 0.3, fill: true, backgroundColor: 'rgba(96, 165, 250, 0.1)' }]
+            },
+            options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
+        });
+
+        const bowlCtx = document.getElementById('bowlingChart').getContext('2d');
+        window.bowlChart = new Chart(bowlCtx, {
+            type: 'bar',
+            data: {
+                labels: myBowling.map(b => b.date),
+                datasets: [{ label: 'Wickets', data: myBowling.map(b => b.wickets), backgroundColor: '#4ade80' }]
+            },
+            options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
+        });
+    }
+
     function switchAuthTab(targetTab) {
         if(targetTab === 'login') {
             document.getElementById('loginTab').classList.add('active'); document.getElementById('registerTab').classList.remove('active');
@@ -240,13 +252,6 @@
             document.getElementById('registerTab').classList.add('active'); document.getElementById('loginTab').classList.remove('active');
             document.getElementById('registerForm').classList.remove('hidden'); document.getElementById('loginForm').classList.add('hidden');
         }
-    }
-
-    function convertFileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader(); reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
-        });
     }
 
     async function handleRegister() {
@@ -263,7 +268,11 @@
         let imageString = "";
         if (photoFileInput.files.length > 0) {
             showLoading(true);
-            try { imageString = await convertFileToBase64(photoFileInput.files[0]); } catch (e) { console.error(e); }
+            try { 
+                const reader = new FileReader();
+                reader.readAsDataURL(photoFileInput.files[0]);
+                imageString = await new Promise((resolve) => reader.onload = () => resolve(reader.result));
+            } catch (e) { console.error(e); }
         }
 
         await fetchCloudDatabase();
@@ -297,11 +306,12 @@
         const avatarDiv = document.getElementById('playerAvatar');
         if(account.image && account.image.startsWith("data:image")) { avatarDiv.innerHTML = `<img src="${account.image}" alt="Profile">`; } else { avatarDiv.innerHTML = defaultAvatar; }
         calculateStats();
+        drawCharts();
     }
 
     function calculateStats() {
-        let myBatting = masterDatabase.batting.filter(b => b.player && b.player.toLowerCase() === currentUsername.toLowerCase());
-        let myBowling = masterDatabase.bowling.filter(b => b.player && b.player.toLowerCase() === currentUsername.toLowerCase());
+        let myBatting = masterDatabase.batting.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
+        let myBowling = masterDatabase.bowling.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
 
         let runs = 0, balls = 0, outs = 0, hs = 0, fifty = 0, hundred = 0;
         let batTbody = document.querySelector('#battingTable tbody'); batTbody.innerHTML = '';
@@ -339,8 +349,8 @@
 
         let runsMap = {}, wicketsMap = {};
         masterDatabase.profiles.forEach(p => { runsMap[p.name] = 0; wicketsMap[p.name] = 0; });
-        masterDatabase.batting.forEach(b => { if(b.player && runsMap[b.player] !== undefined) runsMap[b.player] += parseInt(b.runs); });
-        masterDatabase.bowling.forEach(w => { if(w.player && wicketsMap[w.player] !== undefined) wicketsMap[w.player] += parseInt(w.wickets); });
+        masterDatabase.batting.forEach(b => { if(runsMap[b.player] !== undefined) runsMap[b.player] += parseInt(b.runs); });
+        masterDatabase.bowling.forEach(w => { if(wicketsMap[w.player] !== undefined) wicketsMap[w.player] += parseInt(w.wickets); });
         let topBat = Object.keys(runsMap).map(k => ({name: k, runs: runsMap[k]})).sort((a,b)=>b.runs-a.runs);
         let topBowl = Object.keys(wicketsMap).map(k => ({name: k, wickets: wicketsMap[k]})).sort((a,b)=>b.wickets-a.wickets);
         document.querySelector('#orangeCapTable tbody').innerHTML = topBat.slice(0,5).map((p,i)=>`<tr><td>${i+1}</td><td>${p.name}</td><td><strong>${p.runs}</strong></td></tr>`).join('');
@@ -349,15 +359,28 @@
 
     async function saveBattingRecord() {
         let data = { player: currentUsername, date: document.getElementById('batDate').value, opponent: document.getElementById('batOpponent').value || "Match", runs: document.getElementById('runs').value, balls: document.getElementById('balls').value, howOut: document.getElementById('howOut').value };
-        await sendCloudData("Batting", data); calculateStats();
+        await sendCloudData("Batting", data); calculateStats(); drawCharts();
     }
 
     async function saveBowlingRecord() {
         let data = { player: currentUsername, date: document.getElementById('bowlDate').value, opponent: document.getElementById('bowlOpponent').value || "Match", overs: document.getElementById('overs').value, maidens: document.getElementById('maidens').value, runsConceded: document.getElementById('runsConceded').value, wickets: document.getElementById('wickets').value };
-        await sendCloudData("Bowling", data); calculateStats();
+        await sendCloudData("Bowling", data); calculateStats(); drawCharts();
     }
 
     function handleLogout() { document.getElementById('appPanel').classList.add('hidden'); document.getElementById('authPanel').classList.remove('hidden'); document.getElementById('loginUsername').value = ''; }
 </script>
+</body><!-- Footer Section -->
+    <footer style="margin-top: 50px; padding: 40px; text-align: center; border-top: 1px solid #334155; color: #64748b; font-size: 13px;">
+        <div style="margin-bottom: 10px;">
+            <span style="color: #38bdf8; font-weight: bold; letter-spacing: 1px;">CRICKET ANALYTICS ENGINE</span>
+        </div>
+        <p>Built with precision for performance tracking.</p>
+        <p style="margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;">
+            Made with <span style="color: #ef4444;">❤</span> by <strong>Sithum Hansika Ranaweera</strong>
+        </p>
+        <p style="font-size: 11px; opacity: 0.7;">&copy; 2026 All Rights Reserved</p>
+    </footer>
+
 </body>
+</html>
 </html>
