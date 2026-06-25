@@ -10,14 +10,9 @@
     </script>
     <style>
         :root {
-            --primary: #0f172a;
-            --batting-color: #1e3a8a;
-            --bowling-color: #15803d;
-            --accent: #38bdf8;
-            --background: #0f172a;
-            --card: #1e293b;
-            --text: #f8fafc;
-            --input-bg: #334155;
+            --primary: #0f172a; --batting-color: #1e3a8a; --bowling-color: #15803d;
+            --accent: #38bdf8; --background: #0f172a; --card: #1e293b;
+            --text: #f8fafc; --input-bg: #334155;
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--background); color: var(--text); margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; }
@@ -74,7 +69,7 @@
         <div id="loginForm">
             <div class="form-group" style="margin-bottom: 15px;">
                 <label>Enter Name to Sign In</label>
-                <input type="text" id="loginUsername" placeholder="e.g., Sithum Hansika">
+                <input type="text" id="loginUsername" placeholder="e.g., H.W.Sithum Hansika Ranweera">
             </div>
             <button class="action-btn submit-btn" onclick="handleLogin()">Access Dashboard</button>
         </div>
@@ -94,6 +89,14 @@
     </div>
 
     <div id="appPanel" class="hidden">
+        <div id="notificationBanner" class="hidden" style="background: #f59e0b; color: black; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; text-align: center; border: 2px solid #d97706;"></div>
+
+        <div id="adminBroadcastPanel" class="hidden form-container" style="border: 2px solid #f59e0b;">
+            <h3 style="color: #f59e0b; margin-top:0;">📢 System Broadcast (Admin Only)</h3>
+            <input type="text" id="broadcastMsg" placeholder="Type notification for all users..." style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #475569; color: white; margin-bottom: 10px; box-sizing: border-box;">
+            <button class="action-btn" style="background: #f59e0b; color: black; margin:0; width:100%;" onclick="sendBroadcast()">Push to All Users</button>
+        </div>
+
         <div class="header-actions">
             <span style="font-weight: bold; color: var(--accent);">Status: Live Cloud Linked</span>
             <button class="logout-btn" onclick="handleLogout()">Log Out</button>
@@ -182,7 +185,7 @@
 </div>
 
 <script>
-    let masterDatabase = { profiles: [], batting: [], bowling: [] };
+    let masterDatabase = { profiles: [], batting: [], bowling: [], notifications: [] };
     let currentUsername = "";
     const defaultAvatar = `<svg viewBox="0 0 24 24" width="60" height="60" fill="#38bdf8"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>`;
 
@@ -194,12 +197,11 @@
 
     async function fetchCloudDatabase() {
         if(!CLOUD_URL || CLOUD_URL.includes("YOUR_WEB_APP")) return;
-        showLoading(true);
         try {
             let response = await fetch(CLOUD_URL);
             masterDatabase = await response.json();
+            checkNotifications();
         } catch(e) { console.error("Cloud Fetch Failed", e); }
-        showLoading(false);
     }
 
     async function sendCloudData(sheetName, dataObj) {
@@ -216,32 +218,31 @@
         showLoading(false);
     }
 
+    async function sendBroadcast() {
+        let msg = document.getElementById('broadcastMsg').value;
+        if(!msg) return;
+        await sendCloudData("Notifications", { message: msg, timestamp: new Date().toLocaleString() });
+        alert("Broadcast sent!");
+    }
+
+    function checkNotifications() {
+        if (masterDatabase.notifications && masterDatabase.notifications.length > 0) {
+            let latest = masterDatabase.notifications[masterDatabase.notifications.length - 1];
+            let banner = document.getElementById('notificationBanner');
+            banner.innerText = "📢 " + latest.message;
+            banner.classList.remove('hidden');
+        }
+    }
+
     function drawCharts() {
         if(window.batChart) window.batChart.destroy();
         if(window.bowlChart) window.bowlChart.destroy();
-
         const myBatting = masterDatabase.batting.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
         const myBowling = masterDatabase.bowling.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
-
         const batCtx = document.getElementById('battingChart').getContext('2d');
-        window.batChart = new Chart(batCtx, {
-            type: 'line',
-            data: {
-                labels: myBatting.map(b => b.date),
-                datasets: [{ label: 'Runs Scored', data: myBatting.map(b => b.runs), borderColor: '#60a5fa', tension: 0.3, fill: true, backgroundColor: 'rgba(96, 165, 250, 0.1)' }]
-            },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
-        });
-
+        window.batChart = new Chart(batCtx, { type: 'line', data: { labels: myBatting.map(b => b.date), datasets: [{ label: 'Runs Scored', data: myBatting.map(b => b.runs), borderColor: '#60a5fa', tension: 0.3, fill: true, backgroundColor: 'rgba(96, 165, 250, 0.1)' }] }, options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } } });
         const bowlCtx = document.getElementById('bowlingChart').getContext('2d');
-        window.bowlChart = new Chart(bowlCtx, {
-            type: 'bar',
-            data: {
-                labels: myBowling.map(b => b.date),
-                datasets: [{ label: 'Wickets', data: myBowling.map(b => b.wickets), backgroundColor: '#4ade80' }]
-            },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
-        });
+        window.bowlChart = new Chart(bowlCtx, { type: 'bar', data: { labels: myBowling.map(b => b.date), datasets: [{ label: 'Wickets', data: myBowling.map(b => b.wickets), backgroundColor: '#4ade80' }] }, options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } } });
     }
 
     function switchAuthTab(targetTab) {
@@ -263,22 +264,15 @@
         const favBatsman = document.getElementById('regFavBatsman').value;
         const favBowler = document.getElementById('regFavBowler').value;
         const photoFileInput = document.getElementById('regPhotoFile');
-
         if(!name) { alert("Please type a profile name!"); return; }
         let imageString = "";
         if (photoFileInput.files.length > 0) {
             showLoading(true);
-            try { 
-                const reader = new FileReader();
-                reader.readAsDataURL(photoFileInput.files[0]);
-                imageString = await new Promise((resolve) => reader.onload = () => resolve(reader.result));
-            } catch (e) { console.error(e); }
+            try { const reader = new FileReader(); reader.readAsDataURL(photoFileInput.files[0]); imageString = await new Promise((resolve) => reader.onload = () => resolve(reader.result)); } catch (e) { console.error(e); }
         }
-
         await fetchCloudDatabase();
         let match = masterDatabase.profiles.find(p => p.name.toLowerCase() === name.toLowerCase());
         if(match) { alert("Account already exists!"); return; }
-
         let profileRow = { name, age, height, weight, favBat, favBatsman, favBowler, image: imageString };
         await sendCloudData("Profiles", profileRow);
         alert("Registration complete!");
@@ -288,7 +282,9 @@
     async function handleLogin() {
         const input = document.getElementById('loginUsername').value.trim();
         if(!input) return;
+        showLoading(true);
         await fetchCloudDatabase();
+        showLoading(false);
         let account = masterDatabase.profiles.find(p => p.name.toLowerCase() === input.toLowerCase());
         if(account) { currentUsername = account.name; bootDashboard(account); } else { alert("Profile not found."); }
     }
@@ -296,6 +292,13 @@
     function bootDashboard(account) {
         document.getElementById('authPanel').classList.add('hidden');
         document.getElementById('appPanel').classList.remove('hidden');
+        
+        // ADMIN CHECK (Updated to full name)
+        if(account.name === "H.W.Sithum Hansika Ranweera") { 
+            document.getElementById('adminBroadcastPanel').classList.remove('hidden'); 
+        }
+        
+        // FILL PROFILE DATA
         document.getElementById('displayName').innerText = account.name;
         document.getElementById('displayAge').innerText = account.age + " Yrs";
         document.getElementById('displayHeight').innerText = account.height;
@@ -303,8 +306,10 @@
         document.getElementById('displayFavBat').innerText = account.favBat;
         document.getElementById('displayFavBatsman').innerText = account.favBatsman;
         document.getElementById('displayFavBowler').innerText = account.favBowler;
+        
         const avatarDiv = document.getElementById('playerAvatar');
         if(account.image && account.image.startsWith("data:image")) { avatarDiv.innerHTML = `<img src="${account.image}" alt="Profile">`; } else { avatarDiv.innerHTML = defaultAvatar; }
+        
         calculateStats();
         drawCharts();
     }
@@ -312,14 +317,11 @@
     function calculateStats() {
         let myBatting = masterDatabase.batting.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
         let myBowling = masterDatabase.bowling.filter(b => b.player.toLowerCase() === currentUsername.toLowerCase());
-
         let runs = 0, balls = 0, outs = 0, hs = 0, fifty = 0, hundred = 0;
         let batTbody = document.querySelector('#battingTable tbody'); batTbody.innerHTML = '';
         myBatting.forEach(b => {
-            let r = parseInt(b.runs);
-            runs += r; balls += parseInt(b.balls);
-            if(r > hs) hs = r;
-            if(r >= 100) hundred++; else if(r >= 50) fifty++;
+            let r = parseInt(b.runs); runs += r; balls += parseInt(b.balls);
+            if(r > hs) hs = r; if(r >= 100) hundred++; else if(r >= 50) fifty++;
             if(b.howOut !== 'Not Out') outs++;
             let sr = b.balls > 0 ? ((r / b.balls) * 100).toFixed(2) : "0.00";
             batTbody.innerHTML += `<tr><td>${b.date}</td><td>${b.opponent}</td><td><strong>${r}</strong></td><td>${b.balls}</td><td>${sr}</td><td>${b.howOut}</td></tr>`;
@@ -330,7 +332,6 @@
         document.getElementById('batSR').innerText = balls > 0 ? ((runs / balls) * 100).toFixed(2) : "0.00";
         document.getElementById('batHS').innerText = hs;
         document.getElementById('bat50100').innerText = `${fifty} / ${hundred}`;
-
         let wickets = 0, runsConceded = 0, bestW = 0, bestR = 0, haul3 = 0, haul5 = 0;
         let bowlTbody = document.querySelector('#bowlingTable tbody'); bowlTbody.innerHTML = '';
         myBowling.forEach(w => {
@@ -346,7 +347,6 @@
         document.getElementById('bowlEcon').innerText = myBowling.length > 0 ? (runsConceded / (myBowling.reduce((a,b)=>a+parseFloat(b.overs),0))).toFixed(2) : "0.00";
         document.getElementById('bowlBest').innerText = `${bestW}/${bestR}`;
         document.getElementById('bowlHauls').innerText = `${haul3} / ${haul5}`;
-
         let runsMap = {}, wicketsMap = {};
         masterDatabase.profiles.forEach(p => { runsMap[p.name] = 0; wicketsMap[p.name] = 0; });
         masterDatabase.batting.forEach(b => { if(runsMap[b.player] !== undefined) runsMap[b.player] += parseInt(b.runs); });
@@ -369,18 +369,16 @@
 
     function handleLogout() { document.getElementById('appPanel').classList.add('hidden'); document.getElementById('authPanel').classList.remove('hidden'); document.getElementById('loginUsername').value = ''; }
 </script>
-</body><!-- Footer Section -->
-    <footer style="margin-top: 50px; padding: 40px; text-align: center; border-top: 1px solid #334155; color: #64748b; font-size: 13px;">
-        <div style="margin-bottom: 10px;">
-            <span style="color: #38bdf8; font-weight: bold; letter-spacing: 1px;">CRICKET ANALYTICS ENGINE</span>
-        </div>
-        <p>Built with precision for performance tracking.</p>
-        <p style="margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;">
-            Made with <span style="color: #ef4444;">❤</span> by <strong>Sithum Hansika Ranaweera</strong>
-        </p>
-        <p style="font-size: 11px; opacity: 0.7;">&copy; 2026 All Rights Reserved</p>
-    </footer>
 
+<footer style="margin-top: 50px; padding: 40px; text-align: center; border-top: 1px solid #334155; color: #64748b; font-size: 13px;">
+    <div style="margin-bottom: 10px;">
+        <span style="color: #38bdf8; font-weight: bold; letter-spacing: 1px;">CRICKET ANALYTICS ENGINE</span>
+    </div>
+    <p>Built with precision for performance tracking.</p>
+    <p style="margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;">
+        Made with <span style="color: #ef4444;">❤</span> by <strong>H.W.Sithum Hansika Ranweera</strong>
+    </p>
+    <p style="font-size: 11px; opacity: 0.7;">&copy; 2026 All Rights Reserved</p>
+</footer>
 </body>
-</html>
 </html>
